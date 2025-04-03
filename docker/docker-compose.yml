@@ -1,0 +1,37 @@
+name: "${APP}-dev-env"
+
+services:
+
+  proxy-dev:
+    build:
+      context: .
+      dockerfile: dockerfile
+    image: "${APP}-dev-img"
+    container_name: "${APP}-dev-container"
+    user: node
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
+    volumes:
+      - ../:/home/node/workspace:cached
+      - ${HOME}/.local/share/pnpm:/home/node/.local/share/pnpm:cached
+    networks:
+      proxy-dev-net:
+        ipv4_address: 172.25.0.2
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "true"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# Proxy network
+networks:
+  proxy-dev-net:
+    name: "${PROXY_NAME}-dev-net"
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+

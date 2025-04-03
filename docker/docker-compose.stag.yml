@@ -1,0 +1,76 @@
+name: ${APP}-stag-env
+
+secrets:
+  cloudflare-token:
+    file: "./traefik/secrets/cloudflare-token.secret"
+  cloudflare-email:
+    file: "./traefik/secrets/cloudflare-email.secret"
+
+# Test locally that I can manage differnt docker files to up and down web apps and traefik 
+services:
+  traefik-reverse-proxy:
+    image: traefik:latest
+    container_name: ${APP}-stag-reverse-proxy-container
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      proxy-stag-net:
+        ipv4_address: 172.26.0.2
+    ports:
+      - 80:80
+      - 443:443
+    secrets:
+      - "cloudflare-token"
+      - "cloudflare-email"
+    environment:
+      TRAEFIK_DASHBOARD_CREDENTIALS: ${TRAEFIK_DASHBOARD_CREDENTIALS}
+      CF_DNS_API_TOKEN_FILE: /run/secrets/cloudflare-token
+      CF_API_EMAIL_FILE: /run/secrets/cloudflare-email
+    env_file: .env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/traefik.yml:ro
+      - ./traefik/acme.json:/acme.json
+      - ./traefik/config.yml:/config.yml:ro
+      - ./traefik/logs:/var/log/traefik
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 1
+      start_period: 10s
+    command:
+      - --ping=true
+    labels:
+      - traefik.enable=true
+      # Middlewares
+      - traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_DASHBOARD_CREDENTIALS}
+      - traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https
+      - traefik.http.middlewares.internal_ips.ipallowlist.sourcerange=10.147.17.0/32
+      - traefik.http.middlewares.internal_ips.ipallowlist.ipstrategy.depth=1
+      - traefik.http.middlewares.internal_ips.ipallowlist.ipstrategy.excludedips=127.0.0.1/32, 172.26.0.0/32
+
+      # Router traefik secure
+      - traefik.http.routers.tf_dashboard.entrypoints=https
+      - traefik.http.routers.tf_dashboard.rule=Host(`tf-dashboard.itqualab.com`)
+      - traefik.http.routers.tf_dashboard.middlewares=traefik-auth
+      - traefik.http.routers.tf_dashboard.service=api@internal
+      # - traefik.http.routers.tf_dashboard.middlewares=internal_ips
+      # TODO: Test with ip address from curl ifconfig.me
+      # - traefik.http.middlewares.internal_ips.ipallowlist.sourcerange=10.147.17.0/32, YOUR_IP_ADDRESS/32
+      - traefik.http.routers.tf_dashboard.tls=true
+      - traefik.http.routers.tf_dashboard.tls.certresolver=cloudflare
+      - traefik.http.routers.tf_dashboard.tls.domains[0].main=itqualab.com
+      - traefik.http.routers.tf_dashboard.tls.domains[0].sans=*.itqualab.com
+
+
+# Proxy network
+networks:
+  proxy-stag-net:
+    name: "${PROXY_NAME}-stag-net"
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.26.0.0/16

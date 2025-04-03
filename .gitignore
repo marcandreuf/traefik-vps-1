@@ -134,3 +134,13 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+
+.auth/*
+!.auth/.gitkeep
+
+docker/traefik/secrets/cloudflare-email.secret
+docker/traefik/secrets/cloudflare-token.secret
+
+docker/traefik/logs/*
+!docker/traefik/logs/.gitkeep
