@@ -36,3 +36,29 @@ Setup the hosts file to point to the sample test domain. i.e in linux add the fo
 
 172.27.0.2  tf-dashboard.itqualab.com
 ```
+
+
+## Production deployment
+
+1. Prod traefik config.
+- Uncomment the required log level info or debug.
+- Uncomment the line `caServer: https://acme-v02.api.letsencrypt.org/directory` at the `docker/traefik/traefik.yml` file.
+
+2. Deploy the code to the VPS.
+```bash
+# Copy all prod files use the script
+# This script requires Var Envs defined in the script.
+./deploy/deploy-sync.sh
+```
+
+3. Run the docker compose command -d
+4. Monitor traefik logs. Docker logs follow ....
+
+
+```bash
+# First time setup.
+export TRAEFIK_SERVER_IP={server ip address}
+ 
+
+ssh ubuntu@$TRAEFIK_SERVER_IP -p51337
+```

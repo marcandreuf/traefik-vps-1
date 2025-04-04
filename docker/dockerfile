@@ -1,6 +1,10 @@
 FROM node:22-bookworm
 
 RUN apt update && apt upgrade -y && \
+    apt install rsync -y && \
+    apt install git -y && \
+    apt install openssh-client -y && \
+    apt install curl -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 

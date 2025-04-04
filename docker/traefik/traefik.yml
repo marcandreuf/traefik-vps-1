@@ -1,5 +1,6 @@
 log:
-  level: DEBUG #Change to WARN or ERROR in production
+  #level: DEBUG # Uncomment this line to enable debug logging
+  lelvel: INFO # Set the log level to INFO for production
   filePath: /var/log/traefik/traefik.log
   maxAge: 10
   maxBackups: 20
@@ -42,8 +43,8 @@ certificatesResolvers:
     acme:
       email: marc@itqualab.com
       storage: acme.json
-      #caServer: https://acme-v02.api.letsencrypt.org/directory
-      caServer: https://acme-staging-v02.api.letsencrypt.org/directory
+      caServer: https://acme-v02.api.letsencrypt.org/directory
+      #caServer: https://acme-staging-v02.api.letsencrypt.org/directory
       dnsChallenge:
         provider: cloudflare
         disablePropagationCheck: true # uncomment this if you have issues pulling certificates through cloudflare, By setting this flag to true disables the need to wait for the propagation of the TXT record to all authoritative name servers.
