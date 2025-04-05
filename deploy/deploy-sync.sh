@@ -10,7 +10,9 @@
 
 echo "RSync files from local to remote"
 
-ssh -p 51337 -i ~/.ssh/id_ed25519.pub ubuntu@$TRAEFIK_SERVER_IP "[ ! -d /home/ubuntu/revproxy ] && mkdir -p /home/ubuntu/revproxy && echo 'Reverse proxy directory created' || echo 'Directory already exists'"
+REVPROXY_DIR="/home/ubuntu/revproxy"
+
+ssh -p 51337 -i ~/.ssh/id_ed25519.pub ubuntu@$TRAEFIK_SERVER_IP "[ ! -d $REVPROXY_DIR ] && mkdir -p $REVPROXY_DIR && echo 'Reverse proxy directory created' || echo 'Directory $REVPROXY_DIR already exists'"
 
 rsync -zarvhC --relative --no-perms --no-owner --no-group \
  -e "ssh -p 51337 -i ~/.ssh/id_ed25519.pub" \

@@ -13,8 +13,8 @@ services:
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
-    nnetworks:
-      proxy-stag-net:
+    networks:
+      proxy-prod-net:
         ipv4_address: 172.34.0.2
     ports:
       - 80:80
@@ -31,7 +31,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yml:/traefik.yml:ro
-      - ./traefik/acme.json:/acme.json
+      - ./traefik/acme.json:/acme.json:rw
       - ./traefik/config.yml:/config.yml:ro
       - ./traefik/logs:/var/log/traefik
     healthcheck:
@@ -44,31 +44,17 @@ services:
       - --ping=true
     labels:
       - traefik.enable=true
-      # Middlewares
       - traefik.http.middlewares.traefik-auth.basicauth.users=${TRAEFIK_DASHBOARD_CREDENTIALS}
       - traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https
-      - traefik.http.middlewares.internal_ips.ipallowlist.sourcerange=10.147.17.0/32
-      - traefik.http.middlewares.internal_ips.ipallowlist.ipstrategy.depth=1
-      - traefik.http.middlewares.internal_ips.ipallowlist.ipstrategy.excludedips=127.0.0.1/32, 172.26.0.0/32
-
-      # Router traefik secure
-      - traefik.http.routers.tf_dashboard.entrypoints=https
-      - traefik.http.routers.tf_dashboard.rule=Host(`tf-dashboard.itqualab.com`)
       - traefik.http.routers.tf_dashboard.middlewares=traefik-auth
+      #To not expose the dashboard to the public. 
       - traefik.http.routers.tf_dashboard.service=api@internal
-      # - traefik.http.routers.tf_dashboard.middlewares=internal_ips
-      # TODO: Test with ip address from curl ifconfig.me
-      # - traefik.http.middlewares.internal_ips.ipallowlist.sourcerange=10.147.17.0/32, YOUR_IP_ADDRESS/32
-      - traefik.http.routers.tf_dashboard.tls=true
-      - traefik.http.routers.tf_dashboard.tls.certresolver=cloudflare
-      - traefik.http.routers.tf_dashboard.tls.domains[0].main=itqualab.com
-      - traefik.http.routers.tf_dashboard.tls.domains[0].sans=*.itqualab.com
   
 
 # Proxy network
 networks:
   proxy-prod-net:
-    name: "${PROXY_NAME}-stag-net"
+    name: "${PROXY_NAME}-prod-net"
     driver: bridge
     ipam:
       config:

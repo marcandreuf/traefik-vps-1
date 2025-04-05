@@ -1,15 +1,16 @@
 # traefik-vps-1
 Traefik configuration reverse proxy for vps 1
 
+# Staging
 
 ## Local staging
 For testing the docker compose traefik configurations.
 
 >[!IMPORTANT]
 > The staging environment is used for testing dock
-> Activate staging ca server in the traefik/traefik.yml
+> Activate staging ca server in the `docker/traefik/traefik.yml`
 > The log level to DEBUG
-> Do not use this configuration in production.
+> !!Do not use this configuration in production.
 
 
 ```bash
@@ -17,7 +18,6 @@ For testing the docker compose traefik configurations.
 # Run this outside the devContainer
 docker compose -f docker/docker-compose.stag.yml up
 ```
-
 
 ## Local DNS
 
@@ -38,7 +38,9 @@ Setup the hosts file to point to the sample test domain. i.e in linux add the fo
 ```
 
 
-## Production deployment
+# Production
+
+## Deployment
 
 1. Prod traefik config.
 - Uncomment the required log level info or debug.
@@ -46,16 +48,11 @@ Setup the hosts file to point to the sample test domain. i.e in linux add the fo
 
 2. Deploy the code to the VPS.
 ```bash
-# Copy all prod files use the script
-
-
 # This script requires Var Envs defined in the script.
 ./deploy/deploy-sync.sh
 ```
 
-3. Run the docker compose command
-
- 
+3. Run the docker compose command 
 ```bash
 # Connect to the server
 ssh ubuntu@$TRAEFIK_SERVER_IP -p51337
@@ -68,7 +65,6 @@ docker compose -f docker/docker-compose.prod.yml down
 ```
 
 
-
 4. Monitor traefik logs.
 
 ```bash
@@ -76,4 +72,20 @@ docker compose -f docker/docker-compose.prod.yml down
 docker logs --follow ${APP}-prod-reverse-proxy-container 
 ```
 
+## Traefik dashboard secure access
+
+```bash
+# First get the ip address of the container running in the server
+# Usually 172.18.0.2 or 172.18.0.3
+
+ssh -p 51337 -i ~/.ssh/id_ed25519.pub ubuntu@$TRAEFIK_SERVER_IP "docker inspect $APP-prod-reverse-proxy-container | grep '\"IPAddress\": \"172\"'"
+
+# Forward the container port to our localhost 8092. 
+# We can not open ports in the docker compose because it would 
+# override the ufw firewall rules and open the ports on the VPS. 
+
+ssh -L 8090:172.{x.y.z}:80 8443:172.{x.y.z}:443 ubuntu@$TRAEFIK_SERVER_IP -51337
+
+
+```
 

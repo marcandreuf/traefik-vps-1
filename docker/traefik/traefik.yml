@@ -1,6 +1,6 @@
 log:
-  #level: DEBUG # Uncomment this line to enable debug logging
-  lelvel: INFO # Set the log level to INFO for production
+  level: DEBUG # Uncomment this line to enable debug logging
+  #level: INFO # Set the log level to INFO for production
   filePath: /var/log/traefik/traefik.log
   maxAge: 10
   maxBackups: 20
