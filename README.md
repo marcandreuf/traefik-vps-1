@@ -47,18 +47,33 @@ Setup the hosts file to point to the sample test domain. i.e in linux add the fo
 2. Deploy the code to the VPS.
 ```bash
 # Copy all prod files use the script
+
+
 # This script requires Var Envs defined in the script.
 ./deploy/deploy-sync.sh
 ```
 
-3. Run the docker compose command -d
-4. Monitor traefik logs. Docker logs follow ....
+3. Run the docker compose command
 
+ 
+```bash
+# Connect to the server
+ssh ubuntu@$TRAEFIK_SERVER_IP -p51337
+# Copy the .env.dist file to the server and edit accordingly with the prod configuration
+
+docker compose -f docker/docker-compose.prod.yml up -d
+
+docker compose -f docker/docker-compose.prod.yml down
+
+```
+
+
+
+4. Monitor traefik logs.
 
 ```bash
-# First time setup.
-export TRAEFIK_SERVER_IP={server ip address}
- 
-
-ssh ubuntu@$TRAEFIK_SERVER_IP -p51337
+# Check traefik logs
+docker logs --follow ${APP}-prod-reverse-proxy-container 
 ```
+
+

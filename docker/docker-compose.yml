@@ -9,6 +9,8 @@ services:
     image: "${APP}-dev-img"
     container_name: "${APP}-dev-container"
     user: node
+    env_file:
+      - .env
     ports:
       - "${WEB_PORT}:${WEB_PORT}"
     volumes:
